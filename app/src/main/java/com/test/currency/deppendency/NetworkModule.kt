@@ -30,7 +30,7 @@ object NetworkModule {
         .baseUrl("https://api.apilayer.com/")
         .client(OkHttpClient.Builder().addInterceptor {
             val request = it.request().newBuilder()
-                .addHeader("apikey", "A7Mv6G710hzr7rCwrzbOFdbzMlwcGZB6")
+                .addHeader("apikey", "HBIPyc9o46zKQ6Rc3btEhqas1S0iws2i")
                 .build()
             it.proceed(request)
         }.build())

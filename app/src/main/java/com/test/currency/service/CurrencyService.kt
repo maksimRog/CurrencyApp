@@ -1,5 +1,6 @@
 package com.test.currency.service
 
+import android.content.Context
 import com.test.currency.api.CurrencyEndpoints
 import com.test.currency.api.CurrencyLocal
 import com.test.currency.database.AppDatabase
@@ -8,8 +9,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 
-class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
+class CurrencyService(val context: Context, val retrofit: Retrofit, val database: AppDatabase) {
 
+    val prefs = context.getSharedPreferences("App_Prefs", Context.MODE_PRIVATE)
+    var filterType
+        get() = prefs.getString("Filter_Type", FilterType.A_Z.type)
+        set(value) = prefs.edit().putString("Filter_Type", value).apply()
 
     fun loadSpinnerItems(
         coroutineScope: CoroutineScope,
@@ -23,7 +28,7 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
                         .await().symbols.keys.toList()
                 )
             } catch (ex: Exception) {
-                fail(ex.message?: "Error")
+                fail(ex.message ?: "Error")
             }
         }
     }
@@ -36,20 +41,26 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             try {
-
                 val favorites = database.currencyDao().getAll()
+                val result = retrofit.create(CurrencyEndpoints::class.java).loadCurrenciesAsync(
+                    source
+                ).await().rates.map {
+                    CurrencyLocal(
+                        name = it.key,
+                        count = it.value,
+                        isFavorites = favorites.any { fav -> fav.name == source && fav.exchangeName == it.key })
+                }
+
                 success(
-                    retrofit.create(CurrencyEndpoints::class.java).loadCurrenciesAsync(
-                        source
-                    ).await().rates.map {
-                        CurrencyLocal(
-                            name = it.key,
-                            count = it.value,
-                            isFavorites = favorites.any { fav -> fav.name == source && fav.exchangeName == it.key })
+                    when (filterType) {
+                        FilterType.Z_A.type -> result.sortedByDescending { it.name }
+                        FilterType.ACS.type -> result.sortedBy { it.count.toDouble() }
+                        FilterType.DESC.type -> result.sortedByDescending { it.count.toDouble() }
+                        else -> result.sortedBy { it.name }
                     }
                 )
             } catch (ex: Exception) {
-                fail(ex.message?: "Error")
+                fail(ex.message ?: "Error")
             }
         }
     }
