@@ -19,8 +19,10 @@ class CurrencyViewModel @Inject constructor(
     val result: MutableLiveData<List<CurrencyLocal>> = MutableLiveData()
     val spinnerList: MutableLiveData<List<String>> = MutableLiveData()
     val progress: MutableLiveData<Boolean> = MutableLiveData(false)
+    val failed: MutableLiveData<String?> = MutableLiveData(null)
 
     var currentName = ""
+
     fun loadSpinner() {
         progress.value = true
         service.loadSpinnerItems(
@@ -35,7 +37,7 @@ class CurrencyViewModel @Inject constructor(
             fail = {
                 viewModelScope.launch {
                     progress.value = false
-
+                    failed.value = it
                 }
             }
         )
@@ -58,7 +60,7 @@ class CurrencyViewModel @Inject constructor(
             fail = {
                 viewModelScope.launch {
                     progress.value = false
-
+                    failed.value = it
                 }
             },
             source = text,

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -40,6 +41,11 @@ class CurrencyFragment : Fragment() {
 
         viewModel.loadSpinner()
 
+        viewModel.failed.observe(viewLifecycleOwner) {
+            it?.let {
+                Toast.makeText(view.context, it, Toast.LENGTH_LONG).show()
+            }
+        }
         viewModel.progress.observe(viewLifecycleOwner) {
             binding?.progress?.isVisible = it
         }

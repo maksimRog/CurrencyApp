@@ -14,7 +14,7 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
     fun loadSpinnerItems(
         coroutineScope: CoroutineScope,
         success: (spinnerItems: List<String>) -> Unit,
-        fail: () -> Unit,
+        fail: (String) -> Unit,
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             try {
@@ -23,7 +23,7 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
                         .await().symbols.keys.toList()
                 )
             } catch (ex: Exception) {
-                fail()
+                fail(ex.message?: "Error")
             }
         }
     }
@@ -32,7 +32,7 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
         coroutineScope: CoroutineScope,
         source: String,
         success: (response: List<CurrencyLocal>) -> Unit,
-        fail: () -> Unit,
+        fail: (String) -> Unit,
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             try {
@@ -49,7 +49,7 @@ class CurrencyService(val retrofit: Retrofit, val database: AppDatabase) {
                     }
                 )
             } catch (ex: Exception) {
-                fail()
+                fail(ex.message?: "Error")
             }
         }
     }
